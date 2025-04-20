@@ -13,37 +13,33 @@ if __name__ == "__main__":
 
   # Define input parameter file names
   pallete_name = "name"
-  img_name = "eiffeltower.jpg"
+  img_name = "andora.jpg"
 
   # Import image
   img = plt.imread(input_dir + img_name)
   img = img[:, :, :3]
 
   # 1st Sharpen Image BEFORE Applying Point Filtering
-  # SHARPNESS = 0.5
-  # kernel = np.array([[             0, -1 * SHARPNESS,              0],
-  #                    [-1 * SHARPNESS,  4 * SHARPNESS, -1 * SHARPNESS],
-  #                    [             0, -1 * SHARPNESS,              0]], dtype=np.int8)
-  # img0 = scipy.signal.convolve2d(img[:, :, 0], kernel, boundary='symm', mode='same')
-  # img1 = scipy.signal.convolve2d(img[:, :, 1], kernel, boundary='symm', mode='same')
-  # img2 = scipy.signal.convolve2d(img[:, :, 2], kernel, boundary='symm', mode='same')
+  SHARPNESS = 0.5
+  kernel = np.array([[             0, -1 * SHARPNESS,              0],
+                     [-1 * SHARPNESS,  4 * SHARPNESS, -1 * SHARPNESS],
+                     [             0, -1 * SHARPNESS,              0]], dtype=np.float32)
+  img0 = scipy.signal.convolve2d(img[:, :, 0], kernel, boundary='symm', mode='same')
+  img1 = scipy.signal.convolve2d(img[:, :, 1], kernel, boundary='symm', mode='same')
+  img2 = scipy.signal.convolve2d(img[:, :, 2], kernel, boundary='symm', mode='same')
 
-  # img = np.stack([img0, img1, img2], axis=2)
-  # print(img.shape)  
+  img = img + np.stack([img0, img1, img2], axis=2)
+  print(img.shape)  
+  print(np.min(img), np.max(img))
 
-  # img[:, :, 0] = img[:, :, 0] / np.max(img[:, :, 0])
-  # img[:, :, 1] = img[:, :, 1] / np.max(img[:, :, 1])
-  # img[:, :, 2] = img[:, :, 2] / np.max(img[:, :, 2])
-  # print(random.shape, np.min(random), np.max(random))
-  # print(img.shape)
-  # img[:, :, 0] = scipy.signal.convolve2d(img[:, :, 0], kernel)
-  # img[:, :, 1] = scipy.signal.convolve2d(img[:, :, 1], kernel)
-  # img[:, :, 2] = scipy.signal.convolve2d(img[:, :, 2], kernel)
-  # print(np.min(img), np.max(img))
+  img[:, :, 0] = img[:, :, 0] / np.max(img[:, :, 0])
+  img[:, :, 1] = img[:, :, 1] / np.max(img[:, :, 1])
+  img[:, :, 2] = img[:, :, 2] / np.max(img[:, :, 2])
+  
   
   # 2nd Downsample and Upsample Image Using Point Filtering
   # Define resize dimensions (Intensity of pixel art effect)
-  RESIZE_FACTOR = 16
+  RESIZE_FACTOR = 32
   temp_height, temp_width = img.shape[0]//RESIZE_FACTOR, img.shape[1]//RESIZE_FACTOR
   orig_height, orig_width = img.shape[:2]
 
@@ -66,14 +62,14 @@ if __name__ == "__main__":
   if img.shape[0] <= 256 and img.shape[1] <= 256:
     M = [[0, 2],
          [3, 1]]
-    M = 0.25 * np.array(M, dtype=np.float64)
+    M = 0.25 * np.array(M, dtype=np.float32)
     N = 2
   else:
     M = [[ 0,  8,  2, 10],
          [12,  4, 14,  6],
          [ 3, 11,  1,  9], 
          [15,  7, 13,  5]]
-    M = (1/16) * np.array(M, dtype=np.float64)
+    M = (1/16) * np.array(M, dtype=np.float32)
     N = 4
 
   # Use Bayer Matrix to map pixel coordinates to values 
@@ -90,7 +86,7 @@ if __name__ == "__main__":
   img[:, :, 2] = img[:, :, 2] / np.max(img[:, :, 2])
 
   # 4th Obtain New Color Palette
-  NUMCOLORS = 16
+  NUMCOLORS = 64
   img[:, :, 0] = np.floor(img[:, :, 0] * (NUMCOLORS - 1) + 0.5) / (NUMCOLORS - 1)
   img[:, :, 1] = np.floor(img[:, :, 1] * (NUMCOLORS - 1) + 0.5) / (NUMCOLORS - 1)
   img[:, :, 2] = np.floor(img[:, :, 2] * (NUMCOLORS - 1) + 0.5) / (NUMCOLORS - 1)
