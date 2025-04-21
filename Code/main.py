@@ -6,7 +6,7 @@ from PIL import Image
 """
 This implementation makes the following assumptions
 - Input images are RGB with 3 dimensional color values
-- Pallete Size Must equal NUMCOLORS
+- Pallete Size Must equal NUM_COLORS
 - Darkest colors will map to 1st color in palette & brightest colors will map to last color in palette
 """
 if __name__ == "__main__":
@@ -16,27 +16,27 @@ if __name__ == "__main__":
   output_dir = "../Results/"
 
   # Define input parameters file name
-  img_name = "eiffel-tower.jpg"
-  palette_name = "soft-pastels.png"
+  img_name = "wave.jpg"
+  palette_name = "deep-space.png"
 
   ### Define Constant Parameters ###
   SHARPNESS = 0.3
   RESIZE_FACTOR = 8
-  SPREAD = 0.5
-  NUMCOLORS = 16
+  SPREAD = 0.2
+  NUM_COLORS = 16
    
-  # Import or Define Color Palette (Note: NUMCOLORS must equal len(new_colors))
+  # Import or Define Color Palette (Note: NUM_COLORS must equal len(new_colors))
   if not palette_name:
     new_colors = np.array([[255, 173, 173], [255, 214, 165], [253, 255, 182], [202, 255, 191], [155, 246, 255], [160, 196, 255], [189, 178, 255], [255, 198, 255]], dtype=np.uint8)
 
-    assert NUMCOLORS == new_colors.shape[0], "NUMCOLORS should equal the number of new colors provided"
-    palette = np.zeros((100, 100 * NUMCOLORS, 3), dtype=np.uint8)
+    assert NUM_COLORS == new_colors.shape[0], "NUM_COLORS should equal the number of new colors provided"
+    palette = np.zeros((100, 100 * NUM_COLORS, 3), dtype=np.uint8)
     for i in range(new_colors.shape[0]):
       palette[:, i * 100:(i + 1) * 100, :] = new_colors[i]
-    Image.fromarray(palette, mode="RGB").save(f"{palette_dir}{NUMCOLORS}-color/beachside-breeze.png")
+    Image.fromarray(palette, mode="RGB").save(f"{palette_dir}{NUM_COLORS}-color/beachside-breeze.png")
     new_colors = (new_colors/255).astype(np.float32)
   else:
-    new_colors = np.array(Image.open(f"{palette_dir}{NUMCOLORS}-color/{palette_name}")).astype(np.uint8)
+    new_colors = np.array(Image.open(f"{palette_dir}{NUM_COLORS}-color/{palette_name}")).astype(np.uint8)
     new_colors = new_colors[:, :, :3]
     new_colors = new_colors.reshape(-1, 3)
     dtype = np.dtype([('r', 'u1'), ('g', 'u1'), ('b', 'u1')])
@@ -52,23 +52,26 @@ if __name__ == "__main__":
     img = (img/255).astype(np.float32)
 
   # 1st Sharpen Image BEFORE Applying Point Filtering
-  kernel = np.array([[             0, -1 * SHARPNESS,              0],
-                     [-1 * SHARPNESS,  4 * SHARPNESS, -1 * SHARPNESS],
-                     [             0, -1 * SHARPNESS,              0]], dtype=np.float32)
-  img0 = scipy.signal.convolve2d(img[:, :, 0], kernel, boundary='symm', mode='same')
-  img1 = scipy.signal.convolve2d(img[:, :, 1], kernel, boundary='symm', mode='same')
-  img2 = scipy.signal.convolve2d(img[:, :, 2], kernel, boundary='symm', mode='same')
-
-  convolved = np.stack([img0, img1, img2], axis=2)
-  img = (1 - SHARPNESS) * img + SHARPNESS * (img + convolved)
+  kernel = np.array([[             0, SHARPNESS * -1 ,             0],
+                     [SHARPNESS * -1, SHARPNESS * 4 , SHARPNESS * -1],
+                     [             0, SHARPNESS* -1 ,              0]], dtype=np.float32)
+  img0 = scipy.signal.convolve2d(img[:, :, 0], kernel, mode='same')
+  img1 = scipy.signal.convolve2d(img[:, :, 1], kernel, mode='same')
+  img2 = scipy.signal.convolve2d(img[:, :, 2], kernel, mode='same')
   
+  img0 = img0 - np.min(img0) if np.min(img0) < 0 else img0
+  img1 = img1 - np.min(img1) if np.min(img1) < 0 else img1
+  img2 = img2 - np.min(img2) if np.min(img2) < 0 else img2
+
+  #img = np.stack([img0, img1, img2], axis=2)
+  img = img - np.stack([img0, img1, img2], axis=2)
   # Perform normalization
   img = img - np.min(img) if np.min(img) < 0 else img
   img = img / np.max(img)
   img = np.clip(img, 0, 1)
   
   # Save sharpened image
-  # plt.imsave(output_dir + img_name[:-4] + "-sharpened.jpg", img)
+  plt.imsave(output_dir + img_name[:-4] + "-sharpened.jpg", img)
 
   # 2nd Downsample and Upsample Image Using Point Filtering
   # Define resize dimensions (Intensity of pixel art effect)
@@ -89,7 +92,7 @@ if __name__ == "__main__":
   img = img[orig_rows, orig_cols, :]
 
   # Save new downsampled/pixelated image
-  # plt.imsave(output_dir + img_name[:-4] + "-pixelated.jpg", img)
+  plt.imsave(output_dir + img_name[:-4] + "-pixelated.jpg", img)
 
   # 3rd Perform Bayer/Ordered Dithering to Add Noise
   # Define Bayer Dithering threshold map kernels
@@ -120,39 +123,39 @@ if __name__ == "__main__":
   img = np.clip(img, 0, 1)
 
   # Save newly dithered image
-  # plt.imsave(output_dir + img_name[:-4] + "-dithered.jpg", img)
+  plt.imsave(output_dir + img_name[:-4] + "-dithered.jpg", img)
 
   # 5th Use Luminance Method to Convert Image to Grayscale (0.299*R + 0.587*G + 0.114*B)
   grayscale = 0.299*img[:, :, 0] + 0.587*img[:, :, 1] + 0.114*img[:, :, 2]
 
-  # plt.imsave(output_dir + img_name[:-4] + "-grayscale.jpg", np.stack([grayscale, grayscale, grayscale], axis=2))
+  plt.imsave(output_dir + img_name[:-4] + "-grayscale.jpg", np.stack([grayscale, grayscale, grayscale], axis=2))
 
   # 4th Obtain New Color Palette
-  grayscale = np.floor(grayscale * (NUMCOLORS-1) + 0.5) / (NUMCOLORS-1)
+  grayscale = np.floor(grayscale * (NUM_COLORS-1) + 0.5) / (NUM_COLORS-1)
   unique_colors = np.unique(grayscale)
 
   # Replace colors
-  for i in range(NUMCOLORS):
+  for i in range(len(unique_colors)):
     img[grayscale == unique_colors[i]] = new_colors[i]
 
-  plt.imsave(output_dir + img_name[:-4] + "-final1.jpg", img)
+  plt.imsave(f'{output_dir}{img_name[:-4]}-{palette_name}-1.jpg', img)
   
   np.random.shuffle(new_colors)
   for i in range(len(unique_colors)):
     img[grayscale == unique_colors[i]] = new_colors[i]
 
-  plt.imsave(output_dir + img_name[:-4] + "-final2.jpg", img)
+  plt.imsave(f'{output_dir}{img_name[:-4]}-{palette_name}-2.jpg', img)
 
   np.random.shuffle(new_colors)
   for i in range(len(unique_colors)):
     img[grayscale == unique_colors[i]] = new_colors[i]
 
-  plt.imsave(output_dir + img_name[:-4] + "-final3.jpg", img)
+  plt.imsave(f'{output_dir}{img_name[:-4]}-{palette_name}-3.jpg', img)
 
   np.random.shuffle(new_colors)
   for i in range(len(unique_colors)):
     img[grayscale == unique_colors[i]] = new_colors[i]
 
-  plt.imsave(output_dir + img_name[:-4] + "-final4.jpg", img)
+  plt.imsave(f'{output_dir}{img_name[:-4]}-{palette_name}-4.jpg', img)
 
 
