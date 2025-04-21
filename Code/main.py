@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal
+from PIL import Image
 
 """
 This implementation makes the following assumptions
@@ -16,25 +17,27 @@ if __name__ == "__main__":
 
   # Define input parameters file name
   img_name = "wave.jpg"
-  palette_name = "clay-and-sea.png"
+  palette_name = "beachside-breeze.png"
 
   ### Define Constant Parameters ###
   SHARPNESS = 0.3
   RESIZE_FACTOR = 8
   SPREAD = 0.5
-  NUMCOLORS = 8
+  NUMCOLORS = 16
    
   # Import or Define Color Palette (Note: NUMCOLORS must equal len(new_colors))
   if not palette_name:
-    new_colors = np.array([[255, 173, 173], [255, 214, 165], [253, 255, 182], [202, 255, 191], [155, 246, 255], [160, 196, 255], [189, 178, 255], [255, 198, 255]], dtype=np.float32)
+    new_colors = np.array([[255, 173, 173], [255, 214, 165], [253, 255, 182], [202, 255, 191], [155, 246, 255], [160, 196, 255], [189, 178, 255], [255, 198, 255]], dtype=np.uint8)
 
     assert NUMCOLORS == new_colors.shape[0], "NUMCOLORS should equal the number of new colors provided"
     palette = np.zeros((100, 100 * NUMCOLORS, 3), dtype=np.uint8)
     for i in range(new_colors.shape[0]):
-      palette[:, i*100+1:(i*100)+101, :] = new_colors[i]
-    plt.imsave(f"{palette_dir}{NUMCOLORS}-color/palette_name.png", palette)
+      palette[:, i * 100:(i + 1) * 100, :] = new_colors[i]
+    Image.fromarray(palette, mode="RGB").save(f"{palette_dir}{NUMCOLORS}-color/beachside-breeze.png")
+
+    new_colors = (new_colors/255).astype(np.float32)
   else:
-    new_colors = (plt.imread(f"{palette_dir}{NUMCOLORS}-color/{palette_name}") * 255).astype(np.uint8)
+    new_colors = np.array(Image.open(f"{palette_dir}{NUMCOLORS}-color/{palette_name}")).astype(np.uint8)
     new_colors = new_colors[:, :, :3]
     new_colors = new_colors.reshape(-1, 3)
     dtype = np.dtype([('r', 'u1'), ('g', 'u1'), ('b', 'u1')])
@@ -43,7 +46,7 @@ if __name__ == "__main__":
     new_colors = new_colors[np.sort(idx)]
     new_colors = (new_colors / 255).astype(np.float32)
   print(len(new_colors))
-  #print(new_colors)
+
 #   # Import image
 #   img = plt.imread(img_dir + img_name)
 #   img = img[:, :, :3]

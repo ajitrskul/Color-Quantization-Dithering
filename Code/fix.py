@@ -2,12 +2,38 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-palette_dir = "../Palettes/8-color/"
-NUMCOLORS = 8
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.signal
+from PIL import Image
 
-for filename in os.listdir(palette_dir):
-  file_path = os.path.join(palette_dir, filename)
-  new_colors = (plt.imread(file_path) * 255).astype(np.uint8)
+"""
+This implementation makes the following assumptions
+- Input images are RGB with 3 dimensional color values
+- Pallete Size Must equal NUMCOLORS
+- Darkest colors will map to 1st color in palette & brightest colors will map to last color in palette
+"""
+if __name__ == "__main__":
+  # Define directory names
+  NUMCOLORS = 4
+  palette_dir = "../Palettes/"
+  palette_name = "tech-tones.png"
+   
+  # Import or Define Color Palette (Note: NUMCOLORS must equal len(new_colors))
+  new_colors = np.array([
+    [0, 255, 204], [51, 255, 255], [0, 204, 255], [102, 255, 102]
+  ], dtype=np.uint8)
+
+
+  assert NUMCOLORS == new_colors.shape[0], "NUMCOLORS should equal the number of new colors provided"
+  palette = np.zeros((100, 100 * NUMCOLORS, 3), dtype=np.uint8)
+  for i in range(new_colors.shape[0]):
+    palette[:, i * 100:(i + 1) * 100, :] = new_colors[i]
+  Image.fromarray(palette, mode="RGB").save(f"{palette_dir}{NUMCOLORS}-color/{palette_name}")
+  print(len(new_colors))
+
+
+  new_colors = np.array(Image.open(f"{palette_dir}{NUMCOLORS}-color/{palette_name}")).astype(np.uint8)
   new_colors = new_colors[:, :, :3]
   new_colors = new_colors.reshape(-1, 3)
   dtype = np.dtype([('r', 'u1'), ('g', 'u1'), ('b', 'u1')])
@@ -15,8 +41,4 @@ for filename in os.listdir(palette_dir):
   _, idx = np.unique(structured, return_index=True)
   new_colors = new_colors[np.sort(idx)]
   new_colors = (new_colors / 255).astype(np.float32)
-
-  palette = np.zeros((100, 100 * NUMCOLORS, 3), dtype=np.float32)
-  for i in range(new_colors.shape[0]):
-    palette[:, i*100+1:(i*100)+101, :] = new_colors[i]
-  plt.imsave(f"{file_path}", palette)
+  print(len(new_colors))
