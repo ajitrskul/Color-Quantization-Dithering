@@ -16,8 +16,8 @@ if __name__ == "__main__":
   output_dir = "../Results/"
 
   # Define input parameters file name
-  img_name = "wave.jpg"
-  palette_name = "deep-space.png"
+  img_name = "eiffel-tower.jpg"
+  palette_name = ""
 
   ### Define Constant Parameters ###
   SHARPNESS = 0.3
@@ -27,13 +27,13 @@ if __name__ == "__main__":
    
   # Import or Define Color Palette (Note: NUM_COLORS must equal len(new_colors))
   if not palette_name:
-    new_colors = np.array([[255, 173, 173], [255, 214, 165], [253, 255, 182], [202, 255, 191], [155, 246, 255], [160, 196, 255], [189, 178, 255], [255, 198, 255]], dtype=np.uint8)
+    new_colors = np.array([[91, 206, 250], [245, 169, 184], [255, 255, 255]], dtype=np.uint8)
 
     assert NUM_COLORS == new_colors.shape[0], "NUM_COLORS should equal the number of new colors provided"
     palette = np.zeros((100, 100 * NUM_COLORS, 3), dtype=np.uint8)
     for i in range(new_colors.shape[0]):
       palette[:, i * 100:(i + 1) * 100, :] = new_colors[i]
-    Image.fromarray(palette, mode="RGB").save(f"{palette_dir}{NUM_COLORS}-color/beachside-breeze.png")
+    Image.fromarray(palette, mode="RGB").save(f"{palette_dir}{NUM_COLORS}-color/palette-name.png")
     new_colors = (new_colors/255).astype(np.float32)
   else:
     new_colors = np.array(Image.open(f"{palette_dir}{NUM_COLORS}-color/{palette_name}")).astype(np.uint8)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
   img = np.clip(img, 0, 1)
   
   # Save sharpened image
-  plt.imsave(output_dir + img_name[:-4] + "-sharpened.jpg", img)
+  # plt.imsave(output_dir + img_name[:-4] + "-sharpened.jpg", img)
 
   # 2nd Downsample and Upsample Image Using Point Filtering
   # Define resize dimensions (Intensity of pixel art effect)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
   img = img[orig_rows, orig_cols, :]
 
   # Save new downsampled/pixelated image
-  plt.imsave(output_dir + img_name[:-4] + "-pixelated.jpg", img)
+  # plt.imsave(output_dir + img_name[:-4] + "-pixelated.jpg", img)
 
   # 3rd Perform Bayer/Ordered Dithering to Add Noise
   # Define Bayer Dithering threshold map kernels
@@ -123,12 +123,12 @@ if __name__ == "__main__":
   img = np.clip(img, 0, 1)
 
   # Save newly dithered image
-  plt.imsave(output_dir + img_name[:-4] + "-dithered.jpg", img)
+  # plt.imsave(output_dir + img_name[:-4] + "-dithered.jpg", img)
 
   # 5th Use Luminance Method to Convert Image to Grayscale (0.299*R + 0.587*G + 0.114*B)
   grayscale = 0.299*img[:, :, 0] + 0.587*img[:, :, 1] + 0.114*img[:, :, 2]
 
-  plt.imsave(output_dir + img_name[:-4] + "-grayscale.jpg", np.stack([grayscale, grayscale, grayscale], axis=2))
+  # plt.imsave(output_dir + img_name[:-4] + "-grayscale.jpg", np.stack([grayscale, grayscale, grayscale], axis=2))
 
   # 4th Obtain New Color Palette
   grayscale = np.floor(grayscale * (NUM_COLORS-1) + 0.5) / (NUM_COLORS-1)
