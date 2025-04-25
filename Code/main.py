@@ -16,13 +16,13 @@ if __name__ == "__main__":
   output_dir = "../Results/"
 
   # Define input parameters file name
-  img_name = "eiffel-tower.jpg"
-  palette_name = ""
+  img_name = "basic-bgt.png"
+  palette_name = "deep-space.png"
 
   ### Define Constant Parameters ###
   SHARPNESS = 0.3
-  RESIZE_FACTOR = 8
-  SPREAD = 0.2
+  RESIZE_FACTOR = 1
+  SPREAD = 0.0
   NUM_COLORS = 16
    
   # Import or Define Color Palette (Note: NUM_COLORS must equal len(new_colors))
