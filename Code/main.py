@@ -16,7 +16,7 @@ if __name__ == "__main__":
   output_dir = "../Results/"
 
   # Define input parameters file name
-  img_name = "basic-bgt.png"
+  img_name = "plain.png"
   palette_name = "deep-space.png"
 
   ### Define Constant Parameters ###
